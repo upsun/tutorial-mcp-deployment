@@ -22,8 +22,8 @@ pnpm dev
 # Run production build
 pnpm start
 
-# Run SSE server on custom port
-PORT=8080 pnpm start  # Only for mcp-domains-sse
+# Run server on custom port
+PORT=8080 pnpm start  # For both mcp-domains-sse and mcp-domains-streamable
 ```
 
 ### No lint or test commands are currently configured.
@@ -38,8 +38,8 @@ Both servers follow the same pattern:
 4. Shared API interaction logic
 
 ### Key Differences
-- **mcp-domains-stdio**: Uses StdioServerTransport, runs as CLI process
 - **mcp-domains-sse**: Uses SSEServerTransport with built-in HTTP server on port 3000
+- **mcp-domains-streamable**: Uses StreamableHttpServerTransport with single endpoint for POST/GET requests
 
 ### Exposed Tools
 - `search_domains`: Accepts filters (domain, zone, country, isDead, A, NS, CNAME, MX, TXT, page, limit)
@@ -59,8 +59,8 @@ Both servers follow the same pattern:
 - Output to `dist/` directory
 
 ## Important Notes
-- SSE server requires running before Claude Desktop can connect
-- STDIO server can be installed globally via `pnpm link --global`
+- Both servers require running before Claude Desktop can connect
 - Both servers use the same domain search API internally
 - Error responses include `isError: true` flag
 - No rate limiting implemented - be mindful of API usage
+- Streamable server endpoint: `/mcp` (handles both POST and GET)
