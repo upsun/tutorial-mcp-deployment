@@ -1,0 +1,52 @@
+applications:
+  mcp-domains-streamable:
+    source:
+      root: "mcp-domains-streamable"
+    type: nodejs:22
+    build:
+      flavor: none
+    web:
+      locations:
+        "/":
+          passthru: true
+      commands:
+        start: "npm run start -- -p $PORT"
+      upstream:
+        socket_family: tcp
+    mounts:
+      "/.npm":
+        source: "storage"
+        source_path: "npm"
+    hooks:
+      build: |
+        set -x -e
+        npm install
+        npm run build
+  mcp-domains-sse:
+    source:
+      root: "mcp-domains-sse"
+    type: nodejs:22
+    build:
+      flavor: none
+    web:
+      locations:
+        "/":
+          passthru: true
+      commands:
+        start: "npm run start -- -p $PORT"
+      upstream:
+        socket_family: tcp
+    mounts:
+      "/.npm":
+        source: "storage"
+        source_path: "npm"
+    hooks:
+      build: |
+        set -x -e
+        npm install
+        npm run build
+routes:
+  "https://sse.{all}/": { type: upstream, upstream: "mcp-domains-sse:http", id: "mcp-domains-sse" }
+  "https://streamable.{all}/": { type: upstream, upstream: "mcp-domains-streamable:http", id: "mcp-domains-streamable" }
+  "http://{all}/": { type: redirect, to: "https://streamable.{all}/" }
+  "https://{all}/": { type: redirect, to: "https://streamable.{all}/" }

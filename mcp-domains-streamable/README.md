@@ -102,7 +102,7 @@ The Streamable HTTP transport:
 
 ## Integration with Claude Desktop
 
-Add to your Claude Desktop configuration:
+The Streamable HTTP transport can be used with Claude Desktop or other MCP clients. Add to your Claude Desktop configuration:
 
 ```json
 {
@@ -117,3 +117,15 @@ Add to your Claude Desktop configuration:
   }
 }
 ```
+
+Or use with any HTTP client that supports the MCP Streamable HTTP protocol.
+
+## Comparison with SSE Transport
+
+| Feature | SSE Transport | Streamable HTTP |
+|---------|--------------|-----------------|
+| **Implementation** | Custom SSE handling | SDK's StreamableHTTPServerTransport |
+| **Session Management** | Stateful with session IDs | Stateless (new instance per request) |
+| **Endpoints** | Multiple (`/sse`, `/messages`, etc.) | Single (`/mcp`) |
+| **Performance** | Better for many concurrent clients | Simpler, better for occasional use |
+| **Memory Usage** | Higher (persistent connections) | Lower (no persistent state) |

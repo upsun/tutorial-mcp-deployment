@@ -6,32 +6,32 @@ Two Model Context Protocol (MCP) servers that provide domain name information vi
 
 This project contains two implementations of an MCP server for domain information:
 
-1. **STDIO Transport Server** (`mcp-domains-stdio`) - Recommended for Claude Desktop
-2. **SSE Transport Server** (`mcp-domains-sse`) - For web-based clients
+1. **SSE Transport Server** (`mcp-domains-sse`) - For web-based clients with multiple connections
+2. **Streamable HTTP Transport Server** (`mcp-domains-streamable`) - Modern HTTP transport with SSE support
 
 Both servers provide identical functionality through different transport mechanisms.
 
 ## Quick Start
 
-### For Claude Desktop Users (STDIO)
+### SSE Transport Server
 
 ```bash
-# Navigate to STDIO server
-cd mcp-domains-stdio
+# Navigate to SSE server
+cd mcp-domains-sse
 
 # Install and build
 pnpm install
 pnpm build
 
-# Add to Claude Desktop configuration
-# See mcp-domains-stdio/README.md for details
+# Start the server
+pnpm start
 ```
 
-### For Web Applications (SSE)
+### Streamable HTTP Transport Server
 
 ```bash
-# Navigate to SSE server
-cd mcp-domains-sse
+# Navigate to Streamable HTTP server
+cd mcp-domains-streamable
 
 # Install and build
 pnpm install
@@ -52,7 +52,7 @@ Both servers provide tools to:
 
 ### Example Queries
 
-With Claude Desktop, you can ask:
+You can use these servers to:
 - "Search for all domains containing 'shop'"
 - "Find .org domains with CloudFlare nameservers"
 - "Get information about example.com"
@@ -60,13 +60,14 @@ With Claude Desktop, you can ask:
 
 ## Transport Comparison
 
-| Feature | STDIO | SSE |
-|---------|-------|-----|
-| **Best for** | Claude Desktop, CLI tools | Web apps, multiple clients |
-| **Setup** | No server needed | Requires running server |
-| **Communication** | Standard I/O streams | HTTP + Server-Sent Events |
-| **Multiple clients** | No | Yes |
-| **Debugging** | Simple (visible streams) | HTTP tools |
+| Feature | SSE | Streamable HTTP |
+|---------|-----|-----------------|
+| **Best for** | Web apps, multiple concurrent connections | Modern HTTP clients, Claude Desktop |
+| **Setup** | Requires running server | Requires running server |
+| **Communication** | HTTP + Server-Sent Events | HTTP POST/GET with SSE responses |
+| **Multiple clients** | Yes (session-based) | Yes (stateless) |
+| **Session management** | Stateful with session IDs | Stateless (new instance per request) |
+| **SDK version** | Custom SSE implementation | Built-in StreamableHTTPServerTransport |
 
 ## Technical Details
 
@@ -86,8 +87,8 @@ Both servers use the free [domainsdb.info API](https://domainsdb.info/), which p
 
 ```
 ┌─────────────┐     MCP Protocol    ┌─────────────┐     HTTP API    ┌──────────────┐
-│   Claude    │ ←────────────────→  │ MCP Server  │ ←─────────────→ │ domainsdb.info│
-│   Desktop   │    (STDIO or SSE)    │             │                 │     API       │
+│ MCP Client  │ ←────────────────→  │ MCP Server  │ ←─────────────→ │ domainsdb.info│
+│             │  (SSE or Streamable) │             │                 │     API       │
 └─────────────┘                      └─────────────┘                 └──────────────┘
 ```
 
@@ -103,19 +104,23 @@ Both servers are written in TypeScript and use:
 
 ```
 mcp-tutorial/
-├── mcp-domains-stdio/     # STDIO transport implementation
+├── mcp-domains-sse/           # SSE transport implementation
 │   ├── src/
-│   │   └── index.ts      # Main server code
+│   │   └── index.ts          # Express server + custom SSE MCP
 │   ├── package.json
-│   └── README.md         # Detailed STDIO docs
+│   ├── test-client.js
+│   └── README.md             # Detailed SSE docs
 │
-├── mcp-domains-sse/       # SSE transport implementation
+├── mcp-domains-streamable/    # Streamable HTTP transport implementation
 │   ├── src/
-│   │   └── index.ts      # Express server + MCP
+│   │   └── index.ts          # Express server + StreamableHTTPServerTransport
 │   ├── package.json
-│   └── README.md         # Detailed SSE docs
+│   ├── test-client.js
+│   ├── test-sse.sh
+│   └── README.md             # Detailed Streamable docs
 │
-└── README.md             # This file
+├── CLAUDE.md                  # Project guidance for Claude Code
+└── README.md                  # This file
 ```
 
 ## Getting Help

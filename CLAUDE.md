@@ -38,8 +38,15 @@ Both servers follow the same pattern:
 4. Shared API interaction logic
 
 ### Key Differences
-- **mcp-domains-sse**: Uses SSEServerTransport with built-in HTTP server on port 3000
-- **mcp-domains-streamable**: Uses StreamableHttpServerTransport with single endpoint for POST/GET requests
+- **mcp-domains-sse**: Custom SSE implementation with session management on port 3000
+  - Multiple endpoints: `/sse`, `/messages`, `/health`, `/`
+  - Stateful with session IDs for multiple concurrent clients
+  - Manual Express setup with custom SSE handling
+- **mcp-domains-streamable**: SDK's StreamableHTTPServerTransport on port 3000
+  - Single endpoint: `/mcp` (handles both POST and GET)
+  - Stateless mode (new server instance per request)
+  - Built-in SSE support via SDK
+  - Requires Accept header: `application/json, text/event-stream`
 
 ### Exposed Tools
 - `search_domains`: Accepts filters (domain, zone, country, isDead, A, NS, CNAME, MX, TXT, page, limit)
@@ -58,9 +65,28 @@ Both servers follow the same pattern:
 - Source maps and declarations generated
 - Output to `dist/` directory
 
+## Testing
+
+### mcp-domains-sse
+```bash
+cd mcp-domains-sse
+node test-client.js          # Node.js client test
+./test-sse.sh               # curl-based test
+```
+
+### mcp-domains-streamable
+```bash
+cd mcp-domains-streamable
+node test-client.js          # Node.js client test
+./test-sse.sh               # curl with SSE parsing
+./test-streamable.sh        # basic curl test
+```
+
 ## Important Notes
-- Both servers require running before Claude Desktop can connect
+- Both servers require running before clients can connect
 - Both servers use the same domain search API internally
 - Error responses include `isError: true` flag
 - No rate limiting implemented - be mindful of API usage
-- Streamable server endpoint: `/mcp` (handles both POST and GET)
+- SSE server: Multiple endpoints, session-based
+- Streamable server: Single `/mcp` endpoint, stateless
+- Streamable responses are in SSE format by default
